@@ -1,0 +1,50 @@
+{
+    "manifest_version": 3,
+    "name": "Maxicus Warden Intent Classifier",
+    "version": "1.2.1",
+    "description": "In-browser intent classification for Warden project.",
+    "permissions": [
+        "storage",
+        "unlimitedStorage",
+        "alarms"
+    ],
+    "content_security_policy": {
+        "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+    },
+    "action": {
+        "default_popup": "popup.html"
+    },
+    "background": {
+        "service_worker": "background.js"
+    },
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "tf.min.js",
+                "content.js"
+            ],
+            "world": "MAIN"
+        },
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "logger_bridge.js"
+            ]
+        }
+    ],
+    "web_accessible_resources": [
+        {
+            "resources": [
+                "tf.min.js"
+            ],
+            "matches": [
+                "<all_urls>"
+            ]
+        }
+    ]
+}

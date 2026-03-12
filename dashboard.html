@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Warden Intelligence | Real-Time Analysis</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --primary: #5c4df3;
+            --primary-light: #eeecff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --attention: #3b82f6;
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+            --white: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: #f1f5f9;
+            color: var(--slate-800);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2.5rem;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+        }
+
+        .logo-container {
+            background: var(--primary);
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 10px 20px -5px rgba(92, 77, 243, 0.4);
+        }
+
+        .brand h1 {
+            font-size: 1.85rem;
+            font-weight: 800;
+            color: #1e1b4b;
+            line-height: 1;
+        }
+
+        .brand p {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            margin-top: 6px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .date-badge {
+            background: #eeecff;
+            padding: 0.7rem 1.4rem;
+            border-radius: 30px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: #6366f1;
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+
+        .icon-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-refresh {
+            background: #6366f1;
+        }
+
+        .btn-export {
+            background: #10b981;
+        }
+
+        .btn-clear {
+            background: #ef4444;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            opacity: 0.95;
+        }
+
+        /* Metrics Capsule Redesign */
+        .metrics-capsule {
+            background: white;
+            padding: 1.75rem 3rem;
+            border-radius: 100px;
+            border: 1px solid var(--slate-200);
+            box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .metric-item {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .metric-item:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 10%;
+            height: 80%;
+            width: 1px;
+            background: var(--slate-100);
+        }
+
+        .metric-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: #1e1b4b;
+            line-height: 1;
+            margin-bottom: 0.4rem;
+        }
+
+        .metric-title {
+            font-size: 0.65rem;
+            font-weight: 800;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .metric-sub {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            font-size: 0.65rem;
+            font-weight: 800;
+            margin-top: 0.5rem;
+            text-transform: uppercase;
+        }
+
+        .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+        }
+
+        .star-mini {
+            color: inherit;
+            font-size: 0.8rem;
+        }
+
+        /* Table Styles */
+        .card-table-container {
+            background: white;
+            border-radius: 2.5rem;
+            border: 1px solid var(--slate-200);
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.03);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        th {
+            position: relative;
+            text-align: left;
+            padding: 1.25rem 1rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: var(--slate-400);
+            letter-spacing: 0.12em;
+            border-bottom: 1px solid var(--slate-100);
+        }
+
+        .filter-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .filter-header:hover {
+            color: var(--slate-600);
+        }
+
+        .svg-funnel {
+            width: 14px;
+            height: 14px;
+            color: var(--slate-200);
+            transition: all 0.2s;
+        }
+
+        .svg-funnel.active {
+            color: var(--primary);
+            fill: var(--primary);
+        }
+
+        /* Filter Dropdown Styles */
+        .filter-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 260px;
+            background: white;
+            border: 1px solid var(--slate-200);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        .filter-menu.show {
+            display: flex;
+        }
+
+        .filter-search-container {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+
+        .filter-search-container svg {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-300);
+            width: 14px;
+            height: 14px;
+        }
+
+        .filter-search-input {
+            width: 100%;
+            padding: 0.6rem 0.75rem 0.6rem 2.25rem;
+            border: 1px solid var(--slate-100);
+            border-radius: 8px;
+            font-size: 0.75rem;
+            outline: none;
+            background: #f8fafc;
+        }
+
+        .filter-options-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .filter-option {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .filter-option:hover {
+            background: var(--slate-50);
+        }
+
+        .filter-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .filter-option-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--slate-600);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .filter-footer {
+            display: flex;
+            justify-content: space-between;
+            gap: 0.5rem;
+            border-top: 1px solid var(--slate-100);
+            padding-top: 0.75rem;
+        }
+
+        .btn-filter-clear {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: var(--primary);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.4rem;
+        }
+
+        .btn-filter-apply {
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: white;
+            background: var(--primary);
+            border: none;
+            border-radius: 6px;
+            padding: 0.4rem 1rem;
+            cursor: pointer;
+        }
+
+        td {
+            padding: 1.5rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--slate-600);
+            border-bottom: 1px solid var(--slate-50);
+        }
+
+        .ticket-id {
+            color: #1e1b4b;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            background: #f8fafc;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .status-badge.pending {
+            background: #fffbef;
+            color: #b45309;
+            border-color: #fef3c7;
+        }
+
+        .btn-feedback {
+            background: white;
+            border: 1px solid var(--primary-light);
+            color: var(--primary);
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            padding: 0.6rem 1.25rem;
+            border-radius: 30px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-feedback:hover {
+            background: var(--primary-light);
+            transform: translateY(-1px);
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--slate-50);
+        }
+
+        .pagination-info {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .page-btn {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: white;
+            color: var(--slate-600);
+            font-size: 0.75rem;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: var(--slate-50);
+            border-color: var(--slate-100);
+        }
+
+        .page-btn.active {
+            background: #5c4df3;
+            color: white;
+            box-shadow: 0 4px 10px rgba(92, 77, 243, 0.3);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .nav-arrow {
+            color: var(--slate-400);
+        }
+
+        /* Modal Redesign */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(10px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 580px;
+            border-radius: 3rem;
+            padding: 3.5rem;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes modalPop {
+            from {
+                transform: scale(0.9) translateY(20px);
+                opacity: 0;
+            }
+
+            to {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2.5rem;
+            right: 2.5rem;
+            border: none;
+            background: none;
+            color: var(--slate-400);
+            font-size: 1.75rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .modal-title {
+            font-size: 1.85rem;
+            font-weight: 900;
+            color: #1e1b4b;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .case-ref {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 3rem;
+        }
+
+        .case-ref span:first-child {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        .ref-badge {
+            background: #eeecff;
+            color: var(--primary);
+            padding: 0.4rem 1rem;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
+        }
+
+        .survey-section {
+            background: #fbfbff;
+            border: 1px solid #f0f0ff;
+            border-radius: 2rem;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .survey-label {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--slate-400);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 1.75rem;
+        }
+
+        .stars-container {
+            display: flex;
+            justify-content: center;
+            gap: 1.25rem;
+        }
+
+        .survey-star {
+            font-size: 3rem;
+            color: var(--slate-200);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            line-height: 1;
+        }
+
+        .survey-star.active {
+            color: var(--warning);
+            transform: scale(1.15);
+        }
+
+        .survey-star:hover {
+            color: var(--warning);
+            opacity: 0.8;
+        }
+
+        textarea {
+            width: 100%;
+            background: #fbfbff;
+            border: 1px solid #f0f0ff;
+            border-radius: 1.75rem;
+            padding: 1.75rem;
+            color: var(--slate-600);
+            font-size: 0.9rem;
+            font-weight: 600;
+            min-height: 140px;
+            margin-bottom: 2.5rem;
+            resize: none;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        textarea:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 10px 15px -3px rgba(92, 77, 243, 0.05);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: #eeecff;
+            color: var(--primary);
+            border: none;
+            padding: 1.4rem;
+            border-radius: 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(92, 77, 243, 0.1);
+        }
+
+        .btn-submit:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 20px -5px rgba(92, 77, 243, 0.3);
+        }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--slate-200);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .empty-state {
+            padding: 5rem;
+            text-align: center;
+            color: var(--slate-400);
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        /* SVG Funnel Icon Component */
+        .svg-funnel {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <section class="metrics-capsule">
+            <header>
+                <div class="header-left">
+                    <div class="logo-container">
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                    </div>
+                    <div class="brand">
+                        <h1>Warden <span style="color: #6366f1;">Intelligence</span></h1>
+                        <p>NEXT-STEP PREDICTION DASHBOARD • REAL-TIME ANALYSIS</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="date-badge" id="dateRangeText">LAST 7 DAYS</div>
+                    <button id="refreshBtn" class="icon-btn btn-refresh" title="Refresh">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 4v6h-6"></path>
+                            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                        </svg>
+                    </button>
+                    <button id="exportBtn" class="icon-btn btn-export" title="Export">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                </div>
+            </header>
+        </section>
+        <section class="metrics-capsule">
+            <div class="metric-item">
+                <div class="metric-value" id="metricTotal">0</div>
+                <div class="metric-title">TOTAL TICKETS ASSIGNED</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" style="color: var(--success);" id="metricSolved">0% <span
+                        style="font-size:0.6rem; vertical-align:middle; text-transform:uppercase; color:var(--slate-400);">SOLVED</span>
+                </div>
+                <div class="metric-sub" style="color: var(--success);">
+                    <div class="dot" style="background: var(--success);"></div>
+                    COUNT: <span id="metricSolvedCount">0</span> RESOLVED & REASSIGN
+                </div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" style="color: var(--warning);" id="metricCorrect">0</div>
+                <div class="metric-sub" style="color: var(--warning);"><span class="star-mini">★</span> 5-STAR FEEDBACK
+                </div>
+                <div class="metric-title">CORRECT CASES</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" style="color: var(--danger);" id="metricIncorrect">0</div>
+                <div class="metric-sub" style="color: var(--danger);"><span class="star-mini">★</span> 1-STAR FEEDBACK
+                </div>
+                <div class="metric-title">INCORRECT CASES</div>
+            </div>
+            <div class="metric-item">
+                <div class="metric-value" style="color: var(--attention);" id="metricAttention">0</div>
+                <div class="metric-sub" style="color: var(--attention);"><span class="star-mini">★</span> 2-4 STAR
+                    FEEDBACK</div>
+                <div class="metric-title">NEEDS ATTENTION</div>
+            </div>
+        </section>
+
+        <section class="card-table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">
+                            <div class="filter-header" data-column="ticketId">
+                                TICKET ID
+                                <svg class="svg-funnel" id="icon-ticketId" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="filter-menu" id="menu-ticketId">
+                                <div class="filter-search-container">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" class="filter-search-input" data-column="ticketId"
+                                        placeholder="Search...">
+                                </div>
+                                <div class="filter-options-list" id="list-ticketId">
+                                    <!-- Options injected here -->
+                                </div>
+                                <div class="filter-footer">
+                                    <button class="btn-filter-clear" data-column="ticketId">Clear</button>
+                                    <button class="btn-filter-apply" data-column="ticketId">Apply</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="width: 20%;">
+                            <div class="filter-header" data-column="intent">
+                                INTENT
+                                <svg class="svg-funnel" id="icon-intent" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="filter-menu" id="menu-intent">
+                                <div class="filter-search-container">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" class="filter-search-input" data-column="intent"
+                                        placeholder="Search...">
+                                </div>
+                                <div class="filter-options-list" id="list-intent">
+                                    <!-- Options injected here -->
+                                </div>
+                                <div class="filter-footer">
+                                    <button class="btn-filter-clear" data-column="intent">Clear</button>
+                                    <button class="btn-filter-apply" data-column="intent">Apply</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="width: 25%;">
+                            <div class="filter-header" data-column="reason">
+                                REASON
+                                <svg class="svg-funnel" id="icon-reason" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="filter-menu" id="menu-reason">
+                                <div class="filter-search-container">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" class="filter-search-input" data-column="reason"
+                                        placeholder="Search...">
+                                </div>
+                                <div class="filter-options-list" id="list-reason">
+                                    <!-- Options injected here -->
+                                </div>
+                                <div class="filter-footer">
+                                    <button class="btn-filter-clear" data-column="reason">Clear</button>
+                                    <button class="btn-filter-apply" data-column="reason">Apply</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="width: 12%;">DATE</th>
+                        <th style="width: 10%;">DT RUN</th>
+                        <th style="width: 10%;">
+                            <div class="filter-header" data-column="status">
+                                STATUS
+                                <svg class="svg-funnel" id="icon-status" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"></path>
+                                </svg>
+                            </div>
+                            <div class="filter-menu" id="menu-status" style="right: 0; left: auto;">
+                                <div class="filter-search-container">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <input type="text" class="filter-search-input" data-column="status"
+                                        placeholder="Search...">
+                                </div>
+                                <div class="filter-options-list" id="list-status">
+                                    <!-- Options injected here -->
+                                </div>
+                                <div class="filter-footer">
+                                    <button class="btn-filter-clear" data-column="status">Clear</button>
+                                    <button class="btn-filter-apply" data-column="status">Apply</button>
+                                </div>
+                            </div>
+                        </th>
+                        <th style="width: 5%;">FEEDBACK</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- Rows injected here -->
+                </tbody>
+            </table>
+            <div id="noData" class="empty-state" style="display:none;">NO LOGS FOUND FOR THE SELECTED PERIOD</div>
+
+            <!-- Pagination Footer -->
+            <div class="pagination-container" id="paginationContainer" style="display: none;">
+                <div class="pagination-info" id="paginationInfo">
+                    SHOWING 1 TO 10 OF 0 RESULTS
+                </div>
+                <div class="pagination-controls" id="paginationControls">
+                    <!-- Nav buttons injected by JS -->
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Feedback Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <button class="modal-close" id="closeModal">&times;</button>
+            <h2 class="modal-title">Satisfaction Survey</h2>
+            <div class="case-ref">
+                <span>CASE REFERENCE:</span>
+                <span class="ref-badge" id="modalTicketId">N/A</span>
+            </div>
+
+            <div class="survey-section">
+                <div class="survey-label">RATE YOUR OVERALL EXPERIENCE</div>
+                <div class="stars-container" id="starGroup">
+                    <span class="survey-star star" data-value="1">★</span>
+                    <span class="survey-star star" data-value="2">★</span>
+                    <span class="survey-star star" data-value="3">★</span>
+                    <span class="survey-star star" data-value="4">★</span>
+                    <span class="survey-star star" data-value="5">★</span>
+                </div>
+            </div>
+
+            <div class="survey-label" style="text-align: left; margin-bottom: 1rem; padding-left: 0.5rem;">DETAILED
+                REMARKS</div>
+            <textarea id="feedbackRemarks" placeholder="How can we make your experience better?"></textarea>
+
+            <button class="btn-submit" id="submitFeedback">SUBMIT INTELLIGENCE</button>
+
+            <div class="modal-footer">WARDEN VERIFICATION SYSTEM</div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+
+</html>
